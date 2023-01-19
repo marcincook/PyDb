@@ -19,9 +19,19 @@ server = getenv("PYMSSQL_TEST_SERVER")
 user = getenv("PYMSSQL_TEST_USERNAME")
 password = getenv("PYMSSQL_TEST_PASSWORD")
 database = getenv("PYMSSQL_TEST_DATABASE")
+port = getenv("PYMSSQL_TEST_PORT")
+charset = 'WINDOWS-1252'
+# charset = 'UTF-8'
+# charset = 'utf8'
+# charset = 'Polish_CI_AS'
+# charset = "ISO-8859-1"
+# charset = "LATIN1"
+# charset='iso-8859-1'
+# conn = pymssql.connect(server, user, password, database)
 
-conn = pymssql.connect(server, user, password, database)
-
+# https://www.pymssql.org/ref/pymssql.html
+conn = pymssql.connect(server=server, user=user, password=password, database=database, timeout=0, login_timeout=60, charset=charset, as_dict=True, host='', appname=None, port=port)
+print(pymssql.version_info())
 
 # można też tak, ale sensowniej jest jak wyżej z pliku env
 # conn = pymssql.connect(
@@ -31,13 +41,17 @@ conn = pymssql.connect(server, user, password, database)
 #     database='GastroAdong'
 # )
 
+products = list()
+
+
 def puknijDoBazy():
     cursor = conn.cursor(as_dict=True)
+
     plu_end = 300
     poziom_cenowy_id = '745B467C-2477-416E-9E40-B313B3E6D792'
 
     query = f"""SELECT 
-        TOP 2 
+        TOP 12 
             t.NumerPLU as PLU, 
             t.NazwaTowaru, 
             t.ID, c.Cena as 'CenaLokal' 
@@ -48,11 +62,24 @@ def puknijDoBazy():
             t.NumerPLU<{plu_end}
     """
     cursor.execute(query)
+
     for row in cursor:
+        # name = row['NazwaTowaru'].encode('UTF-8', "ignore")
         print(f"ID:{row['ID']}, Nazwa:{row['NazwaTowaru']} PLU:{row['PLU']} Cena w lokalu:{row['CenaLokal']}")
+        products.append(row)
 
     # wywolajProcedure(poziom_cenowy_id)
     conn.close()
+
+
+
+
+def drukujEtykiety():
+    print('drukuje etykiety')
+    print(products)
+    for product in products:
+        result_print = print_label(product['NazwaTowaru'], '1 z (3)', 'ID_2344', 'L_332')
+        print(result_print)
 
 
 def wywolajProcedure(param1):
@@ -95,7 +122,6 @@ def pokazToast2():
     toast.show()
 
 
-
 def okienko():
     customtkinter.set_appearance_mode('dark')
     customtkinter.set_default_color_theme('dark-blue')
@@ -110,15 +136,18 @@ def okienko():
     # button.pack(pady=12, padx=10)
     button2 = customtkinter.CTkButton(master=frame, text="Pokaż tost 2 windows", command=pokazToast2)
     button2.pack(pady=12, padx=10)
+
+    button3 = customtkinter.CTkButton(master=frame, text="Drukuj etykiety", command=drukujEtykiety)
+    button3.pack(pady=12, padx=10)
+
     root.mainloop()
 
 
 if __name__ == '__main__':
-
     mojaFunkcjaWitaj('Darek')
     puknijDoBazy()
-    result_print = print_label('Kaczka dziwaczka', '1 z (3)', 'ID_2344', 'L_332')
-    print(result_print)
+    # result_print = print_label('Kaczka dziwaczka', '1 z (3)', 'ID_2344', 'L_332')
+    # print(result_print)
     # pokazToast()
     okienko()
     # app = App()
