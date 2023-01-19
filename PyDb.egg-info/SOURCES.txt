@@ -1,0 +1,6 @@
+README.md
+setup.py
+PyDb.egg-info/PKG-INFO
+PyDb.egg-info/SOURCES.txt
+PyDb.egg-info/dependency_links.txt
+PyDb.egg-info/top_level.txt
